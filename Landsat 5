@@ -1,0 +1,28 @@
+var  L5 =    ee.ImageCollection("LANDSAT/LT05/C02/T1")
+             .filterBounds(AOI)
+             .filterDate('2005-01-01' , '2005-12-01')
+             .filterMetadata('CLOUD_COVER','less_Than',1)
+             .mean()
+             .clip(AOI);
+
+var red = L5.select('B3');
+var  nir = L5.select('B4');
+
+var ndvi = red.subtract(nir).divide (red.add(nir)).rename('NDVI');
+var NDVI = ndvi.clip(AOI)
+
+var ndviparam = {min : -1, max : 1, palette:['Blue','yellow','Green']};
+Map.addLayer(NDVI,ndviparam,'NDVI');
+
+
+Export.image.toDrive({
+  image: NDVI,
+  description: 'image_export_LANDSAT NDVI',
+  folder: 'ee_demos',
+  region: AOI,
+  scale: 30,
+  crs: 'EPSG:5070',
+  formatOptions: {
+    cloudOptimized: true
+  }
+});
